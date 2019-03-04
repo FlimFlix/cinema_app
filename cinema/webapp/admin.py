@@ -13,5 +13,3 @@ admin.site.register(Category)
 admin.site.register(Show)
 admin.site.register(Hall)
 admin.site.register(Seat)
-
-

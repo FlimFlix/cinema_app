@@ -89,7 +89,7 @@ class Discount(models.Model):
 class Ticket(models.Model):
     show = models.ForeignKey(Show, on_delete=models.PROTECT, related_name='ticket', verbose_name='show')
     seat = models.ForeignKey(Seat, on_delete=models.PROTECT, related_name='ticket', verbose_name='seat')
-    discount = models.ForeignKey(Discount, blank=True, on_delete=models.PROTECT, related_name='ticket', verbose_name='discount')
+    discount = models.ForeignKey(Discount, on_delete=models.PROTECT, related_name='ticket', verbose_name='discount')
     refund = models.BooleanField(default=False,)
 
 

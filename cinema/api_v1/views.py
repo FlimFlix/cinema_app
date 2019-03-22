@@ -1,40 +1,41 @@
 from webapp.models import Movie, Category, Hall, Seat, Show, Discount, Ticket, Book
 from rest_framework import viewsets
 from api_v1.serializers import MovieSerializer, CategorySerializer, HallSerializer, SeatSerializer, \
-    ShowSerializer, DiscountSerializer, TicketSerializer, BookSerializer
-# from django_filters.rest_framework import DjangoFilterBackend
+    ShowSerializer, DiscountSerializer, TicketSerializer, BookSerializer, UserSerializer
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
-class MovieViewSet(viewsets.ModelViewSet):
-    queryset = Movie.objects.all().order_by('id')
-    serializer_class = MovieSerializer
-    # filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('release_date',)
-
-    # def get_queryset(self):
-    #     queryset = self.queryset
-    #     release_date = self.request.query_params.get('release_date', None)
-    #     if release_date is not None:
-    #         queryset = queryset.filter(release_date__gt=release_date).order_by('-release_date')
-    #     return queryset
+class BaseViewSet(viewsets.ModelViewSet):
+    def get_permissions(self):
+        permissions = super().get_permissions()
+        # IsAuthenticated - класс разрешения, требующий аутентификацию
+        # добавляем его объект ( IsAuthenticated() ) к разрешениям только
+        # для "опасных" методов - добавление, редактирование, удаление данных.
+        if self.request.method in ["POST", "DELETE", "PUT", "PATCH"]:
+            permissions.append(IsAuthenticated())
+        return permissions
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class MovieViewSet(BaseViewSet):
+    queryset = Movie.objects.active().order_by('id')
+
+
+class CategoryViewSet(BaseViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class HallViewSet(viewsets.ModelViewSet):
+class HallViewSet(BaseViewSet):
     queryset = Hall.objects.all()
     serializer_class = HallSerializer
 
 
-class SeatViewSet(viewsets.ModelViewSet):
+class SeatViewSet(BaseViewSet):
     queryset = Seat.objects.all()
     serializer_class = SeatSerializer
 
 
-class ShowViewSet(viewsets.ModelViewSet):
+class ShowViewSet(BaseViewSet):
     queryset = Show.objects.all()
     serializer_class = ShowSerializer
     filterset_fields = ('hall',)
@@ -58,17 +59,17 @@ class ShowViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class DiscountViewSet(viewsets.ModelViewSet):
+class DiscountViewSet(BaseViewSet):
     queryset = Discount.objects.all()
     serializer_class = DiscountSerializer
 
 
-class TicketViewSet(viewsets.ModelViewSet):
+class TicketViewSet(BaseViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
 
 
-class BookViewSet(viewsets.ModelViewSet):
+class BookViewSet(BaseViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
 

@@ -13,6 +13,7 @@ import HallDetail from "./containers/HallDetail/HallDetail";
 import HallEdit from "./containers/HallEdit/HallEdit";
 import Login from "./containers/Login/Login";
 import Logout from "./containers/Logout/Logout";
+import AuthRoute from "./components/AuthRoute/AuthRoute";
 
 
 class App extends Component {
@@ -25,8 +26,8 @@ class App extends Component {
                         <Route path="/halls/:id/edit" component={HallEdit}/>
                         <Route path='/halls/:id' component={HallDetail}/>
                         <Route path="/halls/" component={HallList}/>
-                        <Route path="/movies/add" component={MovieAdd}/>
-                        <Route path="/movies/:id/edit" component={MovieEdit}/>
+                        <AuthRoute path="/movies/add" component={MovieAdd}/>
+                        <AuthRoute path="/movies/:id/edit" component={MovieEdit}/>
                         <Route path='/movies/:id' component={MovieDetail}/>
                         <Route path="/login" component={Login}/>
                         <Route path="/logout" component={Logout}/>

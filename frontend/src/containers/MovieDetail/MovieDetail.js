@@ -82,7 +82,7 @@ class MovieDetail extends Component {
 
             <NavLink to={'/movies/' + id + '/edit'} className="btn btn-primary mr-2">Редактировать</NavLink>
 
-            <button type="button" className="btn btn-danger py-0 px-2" onClick={() => this.movieDeleted(id)}>Удалить</button>
+            <button type="button" className="btn btn-danger mr-2" onClick={() => this.movieDeleted(id)}>Удалить</button>
 
             {this.state.shows ? <ShowSchedule shows={this.state.shows}/> : null}
         </div>;

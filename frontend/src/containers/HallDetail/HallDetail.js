@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {HALLS_URL, MOVIES_URL, SHOWS_URL} from "../../api-urls";
+import {HALLS_URL, SHOWS_URL} from "../../api-urls";
 import {NavLink} from "react-router-dom";
 import axios from 'axios';
 import moment from "moment";

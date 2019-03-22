@@ -9,6 +9,11 @@
     <title>Document</title>
 </head>
 <body>
+        {# имитация клиентского приложения на JS #}
+    <h2>Вызовите в консоли функцию:</h2>
+    <p>getMovies() - чтобы получить список фильмов</p>
+    <p>postMovie("Name") - чтобы создать фильм с именем Name</p>
+    <p><a href="{% url 'admin:index' %}">Админка</a> <a href="/api/v1">API</a> <a href="http://localhost:3000">Клиент</a></p>
     <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

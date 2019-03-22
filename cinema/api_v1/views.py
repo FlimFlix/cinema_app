@@ -18,6 +18,7 @@ class BaseViewSet(viewsets.ModelViewSet):
 
 class MovieViewSet(BaseViewSet):
     queryset = Movie.objects.active().order_by('id')
+    serializer_class = MovieSerializer
 
 
 class CategoryViewSet(BaseViewSet):

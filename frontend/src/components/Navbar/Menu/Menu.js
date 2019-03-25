@@ -30,7 +30,10 @@ class Menu extends Component {
                     <MenuItem to="/halls/add">Добавить зал</MenuItem>
                     {localStorage.getItem('auth-token')
                         ? <MenuItem to="/logout">Выйти</MenuItem>
-                        : <MenuItem to="/login">Войти</MenuItem>}
+                        : [
+                            <MenuItem to="/login" key="login">Войти</MenuItem>,
+                            <MenuItem to="/register" key="register">Зарегистрироваться</MenuItem>
+                        ]}
                 </ul>
             </div>
         </Fragment>

@@ -32,22 +32,28 @@ class Register extends Component {
         });
     };
 
+    passwordsMatch = () => {
+        const {password, passwordConfirm} = this.state.user;
+        return password === passwordConfirm
+    };
 
     formSubmitted = (event) => {
         event.preventDefault();
-        const {passwordConfirm, ...restData} = this.state.user;
-        const {username, password} = this.state.user;
-        return axios.post(REGISTER_URL, restData).then(response => {
-            console.log(response);
-            this.performLogin(username, password);
-        }).catch(error => {
-            console.log(error);
-            console.log(error.response);
-            this.setState({
-                ...this.state,
-                errors: error.response.data
-            })
-        });
+        if (this.passwordsMatch()) {
+            const {passwordConfirm, ...restData} = this.state.user;
+            const {username, password} = this.state.user;
+            return axios.post(REGISTER_URL, restData).then(response => {
+                console.log(response);
+                this.performLogin(username, password);
+            }).catch(error => {
+                console.log(error);
+                console.log(error.response);
+                this.setState({
+                    ...this.state,
+                    errors: error.response.data
+                })
+            });
+        }
     };
 
     inputChanged = (event) => {
@@ -62,22 +68,15 @@ class Register extends Component {
 
     passwordConfirmChange = (event) => {
         this.inputChanged(event);
+        const password = this.state.user.password;
         const passwordConfirm = event.target.value;
-        if(passwordConfirm !== this.state.user.password) {
-            this.setState({
-                errors: {
-                    ...this.state.errors,
-                    passwordConfirm: ['Пароли не совпадают']
-                }
-            })
-        } else {
-            this.setState({
-                errors: {
-                    ...this.state.errors,
-                    passwordConfirm: []
-                }
-            })
-        }
+        const errors = (password === passwordConfirm) ? [] : ['Пароли не совпадают'];
+        this.setState({
+            errors: {
+                ...this.state.errors,
+                passwordConfirm: errors
+            }
+        });
     };
 
     showErrors = (name) => {

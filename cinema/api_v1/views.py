@@ -3,9 +3,13 @@ from rest_framework import viewsets
 from api_v1.serializers import MovieSerializer, CategorySerializer, HallSerializer, SeatSerializer, \
     ShowSerializer, DiscountSerializer, TicketSerializer, BookSerializer, UserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.generics import CreateAPIView
+from django.contrib.auth.models import User
 
 
+# Базовый класс ViewSet, основанный на ModelViewSet
 class BaseViewSet(viewsets.ModelViewSet):
+
     def get_permissions(self):
         permissions = super().get_permissions()
         # IsAuthenticated - класс разрешения, требующий аутентификацию
@@ -42,7 +46,7 @@ class ShowViewSet(BaseViewSet):
     filterset_fields = ('hall',)
 
     def get_queryset(self):
-        queryset = self.queryset
+        queryset = Show.objects.all()
         movie_id = self.request.query_params.get('movie_id', None)
         hall_id = self.request.query_params.get('hall_id', None)
         start_time = self.request.query_params.get('start_time', None)
@@ -73,4 +77,10 @@ class TicketViewSet(BaseViewSet):
 class BookViewSet(BaseViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+
+
+class UserCreateView(CreateAPIView):
+    model = User
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 

@@ -3,6 +3,7 @@ import axios from "axios";
 import {CATEGORIES_URL} from "../../api-urls";
 import DatePicker from "react-datepicker";
 import Select from 'react-select';
+import FormInput from "../UI/FormInput/FormInput";
 
 
 class MovieForm extends Component {
@@ -147,11 +148,8 @@ class MovieForm extends Component {
 
             return <div>
                 <form onSubmit={this.submitForm}>
-                    <div className="form-group">
-                        <label className="font-weight-bold">Название</label>
-                        <input type="text" className="form-control" name="name" value={name}
-                               onChange={this.inputChanged}/>
-                    </div>
+                    <FormInput onChange={this.inputChanged} value={name} name="name" label={"Название"}/>
+
                     <div className="form-group">
                         <label>Описание</label>
                         <textarea className="form-control" name="description" value={description}

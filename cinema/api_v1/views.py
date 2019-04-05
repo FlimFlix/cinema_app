@@ -142,7 +142,7 @@ class UserCreateView(CreateAPIView):
         return RegistrationToken.objects.create(user=user)
 
     def send_registration_email(self, user, token):
-        url = '%s/registration/activate?token=%s' % (settings.HOST_URL, token)
+        url = '%s/register/activate?token=%s' % (settings.HOST_URL, token)
         email_text = "Your account was successfully created. \nPlease, follow the link to activate:\n\n%s" % url
         user.email_user("Registration at Cinema-App", email_text, settings.EMAIL_DEFAULT_FROM)
 
@@ -153,28 +153,19 @@ class UserActivateView(GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            user = self.perform_user_activation(serializer)
-            user_data = UserSerializer(user).data
-            return Response(user_data, status=status.HTTP_200_OK)
-        except RegistrationToken.DoesNotExist:
-            error_data = {"token": "Token does not exist or already used"}
-            return Response(error_data, status=status.HTTP_404_NOT_FOUND)
-        except RegistrationToken.Expired:
-            error_data = {"token": "Token expired"}
-            return Response(error_data, status=status.HTTP_400_BAD_REQUEST)
+        user = self.perform_user_activation(serializer)
+        auth_token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': auth_token.key,
+            'username': user.username,
+            'is_admin': user.is_superuser,
+            'is_staff': user.is_staff
+        })
 
     def perform_user_activation(self, serializer):
-        token_value = serializer.validated_data.get('token')
-        token = self.get_token(token_value)
+        token = serializer.validated_data.get('token')
         user = token.user
         user.is_active = True
         user.save()
         token.delete()
         return user
-
-    def get_token(self, token_value):
-        token = RegistrationToken.objects.get(token=token_value)
-        if token.is_expired():
-            raise RegistrationToken.Expired
-        return token

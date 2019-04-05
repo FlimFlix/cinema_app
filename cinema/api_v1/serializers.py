@@ -1,3 +1,4 @@
+from rest_framework.exceptions import ValidationError
 from webapp.models import Movie, Category, Hall, Seat, Show, Ticket, Discount, Book, RegistrationToken
 from rest_framework import serializers
 from django.contrib.auth.models import User
@@ -146,3 +147,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RegistrationTokenSerializer(serializers.Serializer):
     token = serializers.UUIDField(write_only=True)
+
+    def validate_token(self, token_value):
+        try:
+            token = RegistrationToken.objects.get(token=token_value)
+            if token.is_expired():
+                raise ValidationError("Token expired")
+            return token
+        except RegistrationToken.DoesNotExist:
+            raise ValidationError("Token does not exist or already used")

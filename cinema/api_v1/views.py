@@ -1,7 +1,7 @@
 from django.conf import settings
 from webapp.models import Movie, Category, Hall, Seat, Show, Discount, Ticket, Book, RegistrationToken
 from rest_framework import viewsets, status
-from api_v1.serializers import MovieSerializer, CategorySerializer, HallSerializer, SeatSerializer, \
+from api_v1.serializers import MovieDisplaySerializer, MovieCreateSerializer, CategorySerializer, HallSerializer, SeatSerializer, \
     ShowSerializer, DiscountSerializer, TicketSerializer, BookSerializer, UserSerializer, \
     RegistrationTokenSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
@@ -10,10 +10,6 @@ from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-
-
-class NoAuthModelViewSet(viewsets.ModelViewSet):
-    authentication_classes = []
 
 
 class LoginView(ObtainAuthToken):
@@ -31,22 +27,51 @@ class LoginView(ObtainAuthToken):
         })
 
 
-# Базовый класс ViewSet, основанный на ModelViewSet
 class BaseViewSet(viewsets.ModelViewSet):
-
     def get_permissions(self):
         permissions = super().get_permissions()
-        # IsAuthenticated - класс разрешения, требующий аутентификацию
-        # добавляем его объект ( IsAuthenticated() ) к разрешениям только
-        # для "опасных" методов - добавление, редактирование, удаление данных.
         if self.request.method in ["POST", "DELETE", "PUT", "PATCH"]:
-            permissions.append(IsAuthenticated(), IsAdminUser())
+            permissions.append(IsAuthenticated())
+            permissions.append(IsAdminUser())
         return permissions
 
 
 class MovieViewSet(BaseViewSet):
     queryset = Movie.objects.active().order_by('id')
-    serializer_class = MovieSerializer
+
+    # если в настройках REST_FRAMEWORK прописан django_filters в DEFAULT_FILTER_BACKENDS
+    # то для базовых фильтров по полям модели достаточно указать это поле в ViewSet'е,
+    # в котором перечислить список полей, по которым можно фильтровать.
+    # filterset_fields = ('release_date',)
+
+    # Метод, который отвечает за то,
+    # какой класс сериализатора будет использоваться при обработке запроса.
+    # Если запрос сделан методом GET, т.е. запрос на просмотр фильма или списка фильмов,
+    # то метод возвращает класс MovieDisplaySerializer (вывод фильмов с вложенными категориями),
+    # иначе - MovieCreateSerializer (вывод и сохранение фильмов с категориями в виде списка id категорий).
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return MovieDisplaySerializer
+        else:
+            return MovieCreateSerializer
+
+    # метод, который выполняет удаление объекта instance.
+    # здесь он переопределён для "мягкого" удаления объектов -
+    # вместо реального удаления объекта, меняется его свойство is_deleted на True.
+    # сам фильм сохраняется в базе, но при этом помечается, как удалённый.
+    def perform_destroy(self, instance):
+        instance.is_deleted = True
+        instance.save()
+
+    # вариант фильтрации без использования сторонних библиотек.
+    # переопределяем метод get_queryset, и фильтруем в нём набор данных по параметрам запроса.
+    # этот метод приведён для примера (для текущих задач он здесь не требуется).
+    # def get_queryset(self):
+    #     queryset = self.queryset
+    #     release_date = self.request.query_params.get('release_date', None)
+    #     if release_date is not None:
+    #         queryset = queryset.filter(release_date__gte=release_date).order_by('-release_date')
+    #     return queryset
 
 
 class CategoryViewSet(BaseViewSet):
@@ -135,12 +160,21 @@ class UserActivateView(GenericAPIView):
         except RegistrationToken.DoesNotExist:
             error_data = {"token": "Token does not exist or already used"}
             return Response(error_data, status=status.HTTP_404_NOT_FOUND)
+        except RegistrationToken.Expired:
+            error_data = {"token": "Token expired"}
+            return Response(error_data, status=status.HTTP_400_BAD_REQUEST)
 
     def perform_user_activation(self, serializer):
         token_value = serializer.validated_data.get('token')
-        token = RegistrationToken.objects.get(token=token_value)
+        token = self.get_token(token_value)
         user = token.user
         user.is_active = True
         user.save()
         token.delete()
         return user
+
+    def get_token(self, token_value):
+        token = RegistrationToken.objects.get(token=token_value)
+        if token.is_expired():
+            raise RegistrationToken.Expired
+        return token

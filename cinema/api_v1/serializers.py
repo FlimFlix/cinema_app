@@ -17,12 +17,16 @@ class InlineCategorySerializer(serializers.ModelSerializer):
         fields = ('id', 'title')
 
 
-class HallSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='api_v1:hall-detail')
+class MovieCreateSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='api_v1:movie-detail')
 
     class Meta:
-        model = Hall
-        fields = ('url', 'id', 'title', 'description')
+        model = Movie
+        fields = ('url', 'id', 'name', 'description', 'poster', 'release_date', 'finish_date', 'categories')
+
+
+class MovieDisplaySerializer(MovieCreateSerializer):
+    categories = InlineCategorySerializer(many=True, read_only=True)
 
 
 class InlineSeatSerializer(serializers.ModelSerializer):
@@ -31,12 +35,22 @@ class InlineSeatSerializer(serializers.ModelSerializer):
         fields = ('id', 'row', 'seat')
 
 
+class HallSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='api_v1:hall-detail')
+    seats = InlineSeatSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Hall
+        fields = ('url', 'id', 'title', 'description', 'seats')
+
+
 class SeatSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='api_v1:seat-detail')
+    hall_url = serializers.HyperlinkedRelatedField(view_name='api_v1:hall-detail', read_only=True, source='hall')
 
     class Meta:
         model = Seat
-        fields = ('url', 'id', 'hall', 'row', 'seat')
+        fields = ('url', 'id', 'hall', 'row', 'seat', 'hall_url')
 
 
 class ShowSerializer(serializers.ModelSerializer):
@@ -58,14 +72,14 @@ class ShowSerializer(serializers.ModelSerializer):
                   'start_time', 'finish_time', 'price', 'hall_name', 'movie_name')
 
 
-class MovieSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='api_v1:movie-detail')
-    categories = InlineCategorySerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Movie
-        fields = ('url', 'id', 'name', 'categories', 'description', 'poster', 'release_date',
-                  'finish_date')
+# class MovieSerializer(serializers.ModelSerializer):
+#     url = serializers.HyperlinkedIdentityField(view_name='api_v1:movie-detail')
+#     categories = InlineCategorySerializer(many=True, read_only=True)
+#
+#     class Meta:
+#         model = Movie
+#         fields = ('url', 'id', 'name', 'categories', 'description', 'poster', 'release_date',
+#                   'finish_date')
 
 
 class DiscountSerializer(serializers.ModelSerializer):

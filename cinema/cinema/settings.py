@@ -152,5 +152,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 # вариант с отправкой почты через smtp-сервер, что ближе к "боевым" условиям
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_DEFAULT_FROM = "admin@cinema.app"
+HOST_URL = "http://localhost:3000"
+
+TOKEN_EXPIRATION_HOURS = 72
 
 from .settings_local import *

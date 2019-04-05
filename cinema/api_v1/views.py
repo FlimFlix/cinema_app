@@ -1,13 +1,19 @@
-from webapp.models import Movie, Category, Hall, Seat, Show, Discount, Ticket, Book
-from rest_framework import viewsets
+from django.conf import settings
+from webapp.models import Movie, Category, Hall, Seat, Show, Discount, Ticket, Book, RegistrationToken
+from rest_framework import viewsets, status
 from api_v1.serializers import MovieSerializer, CategorySerializer, HallSerializer, SeatSerializer, \
-    ShowSerializer, DiscountSerializer, TicketSerializer, BookSerializer, UserSerializer
+    ShowSerializer, DiscountSerializer, TicketSerializer, BookSerializer, UserSerializer, \
+    RegistrationTokenSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from django.contrib.auth.models import User
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+
+
+class NoAuthModelViewSet(viewsets.ModelViewSet):
+    authentication_classes = []
 
 
 class LoginView(ObtainAuthToken):
@@ -34,7 +40,7 @@ class BaseViewSet(viewsets.ModelViewSet):
         # добавляем его объект ( IsAuthenticated() ) к разрешениям только
         # для "опасных" методов - добавление, редактирование, удаление данных.
         if self.request.method in ["POST", "DELETE", "PUT", "PATCH"]:
-            permissions.append(IsAuthenticated(),IsAdminUser())
+            permissions.append(IsAuthenticated(), IsAdminUser())
         return permissions
 
 
@@ -102,3 +108,39 @@ class UserCreateView(CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
+    def perform_create(self, serializer):
+        user = serializer.save()
+        token = self.create_token(user)
+        self.send_registration_email(user, token)
+
+    def create_token(self, user):
+        return RegistrationToken.objects.create(user=user)
+
+    def send_registration_email(self, user, token):
+        url = '%s/registration/activate?token=%s' % (settings.HOST_URL, token)
+        email_text = "Your account was successfully created. \nPlease, follow the link to activate:\n\n%s" % url
+        user.email_user("Registration at Cinema-App", email_text, settings.EMAIL_DEFAULT_FROM)
+
+
+class UserActivateView(GenericAPIView):
+    serializer_class = RegistrationTokenSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = self.perform_user_activation(serializer)
+            user_data = UserSerializer(user).data
+            return Response(user_data, status=status.HTTP_200_OK)
+        except RegistrationToken.DoesNotExist:
+            error_data = {"token": "Token does not exist or already used"}
+            return Response(error_data, status=status.HTTP_404_NOT_FOUND)
+
+    def perform_user_activation(self, serializer):
+        token_value = serializer.validated_data.get('token')
+        token = RegistrationToken.objects.get(token=token_value)
+        user = token.user
+        user.is_active = True
+        user.save()
+        token.delete()
+        return user

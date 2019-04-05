@@ -1,7 +1,8 @@
 from rest_framework.exceptions import ValidationError
-from webapp.models import Movie, Category, Hall, Seat, Show, Ticket, Discount, Book, RegistrationToken
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+from webapp.models import Movie, Category, Hall, Seat, Show, Ticket, Discount, Book, RegistrationToken
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -118,7 +119,7 @@ class BookSerializer(serializers.ModelSerializer):
         fields = ('url', 'id', 'code', 'show', 'show_url', 'seats', 'status', 'created_at', 'updated_at')
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password_confirm = serializers.CharField(write_only=True)
     email = serializers.EmailField(required=True)
@@ -131,7 +132,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password_confirm')
         password = validated_data.pop('password')
-        user = User.objects.create(**validated_data)
+        user = super().create(validated_data)
         user.set_password(password)
         user.is_active = False
         user.save()
@@ -140,6 +141,42 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'password', 'password_confirm', 'email')
+
+
+class UserSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='api_v1:user-detail')
+    username = serializers.CharField(read_only=True)
+    password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    new_password_confirm = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    email = serializers.EmailField(required=True, allow_blank=False)
+
+    def validate_password(self, value):
+        user = self.context['request'].user
+        if not authenticate(username=user.username, password=value):
+            raise ValidationError('Invalid password for your account')
+        return value
+
+    def validate(self, attrs):
+        if attrs.get('new_password') != attrs.get('new_password_confirm'):
+            raise ValidationError("Passwords do not match")
+        return super().validate(attrs)
+
+    def update(self, instance, validated_data):
+        validated_data.pop('password')
+        new_password = validated_data.pop('new_password')
+        validated_data.pop('new_password_confirm')
+        instance = super().update(instance, validated_data)
+
+        if new_password:
+            instance.set_password(new_password)
+        instance.save()
+        return instance
+
+    class Meta:
+        model = User
+        fields = ['url', 'id', 'username', 'first_name', 'last_name', 'email',
+                  'password', 'new_password', 'new_password_confirm']
 
 
 class RegistrationTokenSerializer(serializers.Serializer):

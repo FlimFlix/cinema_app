@@ -14,7 +14,7 @@ class Login extends Component {
 
     formSubmitted = (event) => {
         event.preventDefault();
-        return axios.post(LOGIN_URL, this.state.credentials).then(response => {
+        return axios.post(LOGIN_URL + '/', this.state.credentials).then(response => {
             console.log(response);
             localStorage.setItem('auth-token', response.data.token);
             localStorage.setItem('username', response.data.username);
@@ -38,10 +38,10 @@ class Login extends Component {
     inputChanged = (event) => {
         this.setState({
             ...this.state,
-            credentials:
-                {...this.state.credentials,
-                    [event.target.name]: event.target.value
-                }
+            credentials: {
+                ...this.state.credentials,
+                [event.target.name]: event.target.value
+            }
         })
     };
 

@@ -14,8 +14,6 @@ class RegistrationToken(models.Model):
     created_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
-    class Expired(Exception): pass
-
     def is_expired(self):
         delta = now() - self.created_at
         delta_hours = delta.total_seconds() / 3600

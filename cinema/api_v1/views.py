@@ -1,9 +1,9 @@
 from django.conf import settings
 from webapp.models import Movie, Category, Hall, Seat, Show, Discount, Ticket, Book, RegistrationToken
 from rest_framework import viewsets, status
-from api_v1.serializers import MovieDisplaySerializer, MovieCreateSerializer, CategorySerializer, HallSerializer, SeatSerializer, \
-    ShowSerializer, DiscountSerializer, TicketSerializer, BookSerializer, UserSerializer, \
-    RegistrationTokenSerializer
+from api_v1.serializers import MovieDisplaySerializer, MovieCreateSerializer, CategorySerializer, HallSerializer, \
+    SeatSerializer, ShowSerializer, DiscountSerializer, TicketSerializer, BookSerializer, UserRegisterSerializer, \
+    RegistrationTokenSerializer, UserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from django.contrib.auth.models import User
 from rest_framework.generics import CreateAPIView, GenericAPIView
@@ -21,6 +21,7 @@ class LoginView(ObtainAuthToken):
         token, created = Token.objects.get_or_create(user=user)
         return Response({
             'token': token.key,
+            'user_id': user.id,
             'username': user.username,
             'is_admin': user.is_superuser,
             'is_staff': user.is_staff
@@ -130,7 +131,7 @@ class BookViewSet(BaseViewSet):
 
 class UserCreateView(CreateAPIView):
     model = User
-    serializer_class = UserSerializer
+    serializer_class = UserRegisterSerializer
     permission_classes = [AllowAny]
 
     def perform_create(self, serializer):
@@ -169,3 +170,19 @@ class UserActivateView(GenericAPIView):
         user.save()
         token.delete()
         return user
+
+
+class UserViewSet(BaseViewSet):
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+
+    def get_permissions(self):
+        permissions = super().get_permissions()
+        if self.request.method in ["POST", "DELETE", "PUT", "PATCH"]:
+            permissions.append(IsAuthenticated())
+        return permissions
+
+    def check_object_permissions(self, request, obj):
+        super().check_object_permissions(request, obj)
+        if request.method in ['PUT', 'PATCH', 'DELETE'] and obj != request.user:
+            self.permission_denied(request, 'Can not edit other users data!')

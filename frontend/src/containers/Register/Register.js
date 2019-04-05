@@ -1,5 +1,5 @@
 import React, {Component, Fragment} from 'react';
-import {LOGIN_URL, REGISTER_URL} from "../../api-urls";
+import {REGISTER_URL} from "../../api-urls";
 import axios from 'axios';
 
 
@@ -14,24 +14,6 @@ class Register extends Component {
         errors: {}
     };
 
-    performLogin = (username, password) => {
-        axios.post(LOGIN_URL, {username, password}).then(response => {
-            console.log(response);
-            localStorage.setItem('auth-token', response.data.token);
-            localStorage.setItem('username', response.data.username);
-            localStorage.setItem('is_admin', response.data.is_admin);
-            localStorage.setItem('is_staff', response.data.is_staff);
-            this.props.history.replace('/');
-        }).catch(error => {
-            console.log(error);
-            console.log(error.response);
-            this.props.history.replace({
-                pathname: '/login/',
-                state: {next: '/'}
-            });
-        });
-    };
-
     passwordsMatch = () => {
         const {password, passwordConfirm} = this.state.user;
         return password === passwordConfirm
@@ -41,10 +23,9 @@ class Register extends Component {
         event.preventDefault();
         if (this.passwordsMatch()) {
             const {passwordConfirm, ...restData} = this.state.user;
-            const {username, password} = this.state.user;
             return axios.post(REGISTER_URL, restData).then(response => {
                 console.log(response);
-                this.performLogin(username, password);
+                this.props.history.replace('/register/activate')
             }).catch(error => {
                 console.log(error);
                 console.log(error.response);
@@ -112,7 +93,7 @@ class Register extends Component {
                     {this.showErrors('passwordConfirm')}
                 </div>
                 <div className="form-row">
-                    <label>E-mail</label>
+                    <label className="font-weight-bold">E-mail</label>
                     <input type="email" className="form-control" name="email" value={email}
                            onChange={this.inputChanged}/>
                     {this.showErrors('email')}

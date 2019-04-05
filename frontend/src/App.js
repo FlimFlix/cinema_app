@@ -15,6 +15,7 @@ import Login from "./containers/Login/Login";
 import Logout from "./containers/Logout/Logout";
 import AuthRoute from "./components/AuthRoute/AuthRoute";
 import Register from "./containers/Register/Register"
+import RegisterActivate from "./containers/RegisterActivate/RegisterActivate"
 
 
 class App extends Component {
@@ -23,8 +24,8 @@ class App extends Component {
             <BrowserRouter>
                 <Layout>
                     <Switch>
-                        <Route path="/halls/add" component={HallAdd}/>
-                        <Route path="/halls/:id/edit" component={HallEdit}/>
+                        <AuthRoute path="/halls/add" component={HallAdd}/>
+                        <AuthRoute path="/halls/:id/edit" component={HallEdit}/>
                         <Route path='/halls/:id' component={HallDetail}/>
                         <Route path="/halls/" component={HallList}/>
                         <AuthRoute path="/movies/add" component={MovieAdd}/>
@@ -32,7 +33,8 @@ class App extends Component {
                         <Route path='/movies/:id' component={MovieDetail}/>
                         <Route path="/login" component={Login}/>
                         <Route path="/logout" component={Logout}/>
-                        <Route path="/register" component={Register}/>
+                        <Route path="/register" component={Register} exact/>
+                        <Route path="/register/activate" component={RegisterActivate}/>
                         <Route path="/" component={MovieList}/>
                     </Switch>
                 </Layout>

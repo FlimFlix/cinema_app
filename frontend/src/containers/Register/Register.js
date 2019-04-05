@@ -107,6 +107,7 @@ class Register extends Component {
                 <div className="form-row">
                     <label className="font-weight-bold">Подтверждение пароля</label>
                     <input type="password" className="form-control" name="passwordConfirm" value={passwordConfirm}
+                           onPaste={event => event.preventDefault()}
                            onChange={this.passwordConfirmChange}/>
                     {this.showErrors('passwordConfirm')}
                 </div>

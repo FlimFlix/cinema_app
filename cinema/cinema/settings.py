@@ -145,3 +145,11 @@ BOOKING_CODE_LENGTH = 6
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+# вариант с логирование писем в файл, подходит для разработки
+# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+# EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'mail-dev')
+
+# вариант с отправкой почты через smtp-сервер, что ближе к "боевым" условиям
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+from .settings_local import *

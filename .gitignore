@@ -4,3 +4,5 @@ venv
 .DS_Store
 *.sqlite3
 uploads
+mail-dev
+settings_local.py

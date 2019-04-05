@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from webapp.models import Movie, Category, Hall, Seat, Show, Ticket, Discount, Book, RegistrationToken
+from rest_framework.authtoken.models import Token
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -190,3 +191,13 @@ class RegistrationTokenSerializer(serializers.Serializer):
             return token
         except RegistrationToken.DoesNotExist:
             raise ValidationError("Token does not exist or already used")
+
+
+class AuthTokenSerializer(serializers.Serializer):
+    token = serializers.CharField(write_only=True)
+
+    def validate_token(self, token):
+        try:
+            return Token.objects.get(key=token)
+        except Token.DoesNotExist:
+            raise ValidationError("Invalid credentials")

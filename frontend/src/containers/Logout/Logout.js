@@ -5,7 +5,7 @@ import {logout} from "../../store/actions/logout";
 
 class Logout extends Component {
     componentDidMount() {
-        logout();
+        this.props.logout();
         this.props.history.replace('/');
     };
 
@@ -15,7 +15,7 @@ class Logout extends Component {
 
 const mapStateToProps = state => ({});
 const mapDispatchToProps = dispatch => ({
-    logout: () => dispatch(logout)
+    logout: () => dispatch(logout())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Logout);

@@ -16,6 +16,7 @@ import Logout from "./containers/Logout/Logout";
 import AuthRoute from "./components/AuthRoute/AuthRoute";
 import Register from "./containers/Register/Register"
 import RegisterActivate from "./containers/Register/RegisterActivate/RegisterActivate"
+import UserSettings from "./containers/UserSettings/UserSettings"
 
 
 class App extends Component {
@@ -35,6 +36,7 @@ class App extends Component {
                         <Route path="/logout" component={Logout}/>
                         <Route path="/register" component={Register} exact/>
                         <Route path="/register/activate" component={RegisterActivate}/>
+                        <AuthRoute path="/users/:id" component={UserSettings}/>
                         <Route path="/" component={MovieList}/>
                     </Switch>
                 </Layout>

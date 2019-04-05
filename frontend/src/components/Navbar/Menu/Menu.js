@@ -1,5 +1,6 @@
 import React, {Component, Fragment} from 'react'
 import MenuItem from "./MenuItem/MenuItem";
+import {NavLink} from "react-router-dom";
 
 
 class Menu extends Component {
@@ -33,8 +34,9 @@ class Menu extends Component {
                 </ul>
                 <ul className="navbar-nav ml-auto">
                     {username ? [
-                        <li className="nav-item" key="username"><span className="navbar-text">Привет, {username}!</span>
-                        </li>,
+                        <li className="nav-item" key="username"><span className="navbar-text">
+                            Привет, <NavLink to={"/users/" + localStorage.getItem('user_id')}>{username}</NavLink>!
+                        </span></li>,
                         <MenuItem to="/logout" key="logout">Выйти</MenuItem>
                     ] : [
                         <MenuItem to="/login" key="login">Войти</MenuItem>,

@@ -172,7 +172,7 @@ class UserActivateView(GenericAPIView):
         return user
 
 
-class UserViewSet(BaseViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     queryset = User.objects.all()
 

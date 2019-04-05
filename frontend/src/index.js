@@ -6,12 +6,12 @@ import * as serviceWorker from './serviceWorker';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "react-datepicker/dist/react-datepicker.css";
 import {createStore, applyMiddleware} from 'redux';
-import reducer from '../store/reducer';
+import reducer from './store/reducer';
 import {Provider} from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
 
 
-// TODO: убрать, как только все запросы 'переедут' в actions.js
+// TODO: убрать, как только все запросы 'переедут' в login.js
 import axios from 'axios';
 
 import {BASE_URL} from "./api-urls";

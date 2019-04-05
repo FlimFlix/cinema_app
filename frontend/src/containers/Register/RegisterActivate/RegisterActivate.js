@@ -1,5 +1,5 @@
 import React, {Component, Fragment} from 'react'
-import {REGISTER_ACTIVATE_URL} from "../../api-urls";
+import {REGISTER_ACTIVATE_URL} from "../../../api-urls";
 import axios from 'axios';
 
 

@@ -15,7 +15,7 @@ import Login from "./containers/Login/Login";
 import Logout from "./containers/Logout/Logout";
 import AuthRoute from "./components/AuthRoute/AuthRoute";
 import Register from "./containers/Register/Register"
-import RegisterActivate from "./containers/RegisterActivate/RegisterActivate"
+import RegisterActivate from "./containers/Register/RegisterActivate/RegisterActivate"
 
 
 class App extends Component {

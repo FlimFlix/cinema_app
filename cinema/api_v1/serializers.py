@@ -73,16 +73,6 @@ class ShowSerializer(serializers.ModelSerializer):
                   'start_time', 'finish_time', 'price', 'hall_name', 'movie_name')
 
 
-# class MovieSerializer(serializers.ModelSerializer):
-#     url = serializers.HyperlinkedIdentityField(view_name='api_v1:movie-detail')
-#     categories = InlineCategorySerializer(many=True, read_only=True)
-#
-#     class Meta:
-#         model = Movie
-#         fields = ('url', 'id', 'name', 'categories', 'description', 'poster', 'release_date',
-#                   'finish_date')
-
-
 class DiscountSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='api_v1:discount-detail')
 
@@ -130,9 +120,16 @@ class BookSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    password_confirm = serializers.CharField(write_only=True)
     email = serializers.EmailField(required=True)
 
+    def validate(self, attrs):
+        if attrs.get('password') != attrs.get('password_confirm'):
+            raise ValidationError("Passwords do not match")
+        return super().validate(attrs)
+
     def create(self, validated_data):
+        validated_data.pop('password_confirm')
         password = validated_data.pop('password')
         user = User.objects.create(**validated_data)
         user.set_password(password)
@@ -142,7 +139,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'email')
+        fields = ('id', 'username', 'password', 'password_confirm', 'email')
 
 
 class RegistrationTokenSerializer(serializers.Serializer):

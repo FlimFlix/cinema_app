@@ -1,6 +1,4 @@
 import React, {Component, Fragment} from 'react'
-import axios from "axios";
-import {MOVIES_URL} from "../../api-urls";
 import MovieForm from "../../components/MovieForm/MovieForm";
 import {loadMovie, MOVIE_EDIT_SUCCESS, saveMovie} from "../../store/actions/movie-edit";
 import {connect} from "react-redux";
@@ -12,7 +10,7 @@ class MovieEdit extends Component {
     }
 
     formSubmitted = (movie) => {
-                const {auth} = this.props;
+        const {auth} = this.props;
         return this.props.saveMovie(movie, auth.token).then(result => {
             if (result.type === MOVIE_EDIT_SUCCESS) {
                 this.props.history.push('/movies/' + result.movie.id);

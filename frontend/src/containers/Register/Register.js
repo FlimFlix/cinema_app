@@ -1,6 +1,6 @@
 import React, {Component, Fragment} from 'react';
-import {REGISTER_URL} from "../../api-urls";
-import axios from 'axios';
+import {REGISTER_SUCCESS, registerUser} from "../../store/actions/register";
+import {connect} from "react-redux";
 
 
 class Register extends Component {
@@ -10,23 +10,18 @@ class Register extends Component {
             password: "",
             password_confirm: "",
             email: "",
-        },
-        errors: {}
+        }
     };
 
     formSubmitted = (event) => {
         event.preventDefault();
-        return axios.post(REGISTER_URL, this.state.user).then(response => {
-            console.log(response);
-            this.props.history.replace('/register/activate');
-        }).catch(error => {
-            console.log(error);
-            console.log(error.response);
-            this.setState({
-                ...this.state,
-                errors: error.response.data
-            })
-        });
+        if(!this.props.loading){
+            this.props.registerUser(this.state.user).then(result => {
+                if(result.type === REGISTER_SUCCESS) {
+                    this.props.history.replace('/register/activate');
+                }
+            });
+        }
     };
 
     inputChanged = (event) => {
@@ -40,8 +35,9 @@ class Register extends Component {
     };
 
     showErrors = (name) => {
-        if (this.state.errors && this.state.errors[name]) {
-            return this.state.errors[name].map((error, index) => <p className="text-danger" key={index}>{error}</p>);
+        const errors = this.props.errors;
+        if (errors && errors[name]) {
+            return errors[name].map((error, index) => <p className="text-danger" key={index}>{error}</p>);
         }
         return null;
     };
@@ -69,7 +65,7 @@ class Register extends Component {
                     <input type="password" className="form-control" name="password_confirm" value={password_confirm}
                            onPaste={event => event.preventDefault()}
                            onChange={this.inputChanged}/>
-                    {this.showErrors('passwordConfirm')}
+                    {this.showErrors('password_confirm')}
                 </div>
                 <div className="form-row">
                     <label className="font-weight-bold">E-mail</label>
@@ -77,11 +73,19 @@ class Register extends Component {
                            onChange={this.inputChanged}/>
                     {this.showErrors('email')}
                 </div>
-                <button type="submit" className="btn btn-primary mt-2">Зарегистрироваться</button>
+                <button type="submit" disabled={this.props.loading} className="btn btn-primary mt-2">
+                    Зарегистрироваться</button>
             </form>
         </Fragment>
     }
 }
 
 
-export default Register;
+const mapStateToProps = (state) => state.register;
+
+const mapDispatchToProps = (dispatch) => ({
+    registerUser: (user) => dispatch(registerUser(user))
+});
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Register);

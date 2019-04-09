@@ -2,6 +2,8 @@ import React, {Component, Fragment} from 'react';
 import axios from 'axios';
 import {USERS_URL} from "../../api-urls";
 import UserForm from "../../components/UserForm/UserForm";
+import Modal from "../../components/UI/Modal/Modal";
+import {connect} from "react-redux";
 
 class UserSettings extends Component {
     state = {
@@ -34,11 +36,11 @@ class UserSettings extends Component {
         });
     };
 
-    toggleEdit = () => {
+    toggleEdit = (edit) => {
         this.setState(prevState => {
             return {
                 ...prevState,
-                edit: !prevState.edit,
+                edit: edit,
                 alert: null
             };
         });
@@ -47,7 +49,7 @@ class UserSettings extends Component {
     render() {
         // не забываем конвертировать user_id из localStorage в int для сравнения
         // (по умолчанию всё из localStorage считывается, как строка).
-        const currentUserId = parseInt(localStorage.getItem('user_id'));
+        const currentUserId = this.props.auth.user_id;
         const {username, first_name, last_name, email} = this.state.user;
         const alert = this.state.alert;
         return <Fragment>
@@ -62,15 +64,20 @@ class UserSettings extends Component {
             {/* и данные пользователя (откуда берётся id для сравнения) загрузились. */}
             {currentUserId === this.state.user.id ? <Fragment>
                 <div className="my-4">
-                    <button className="btn btn-primary" type="button" onClick={this.toggleEdit}>Редактировать</button>
-                    <div className={this.state.edit ? "mt-4" : "mt-4 collapse"}>
+                    <button className="btn btn-primary" type="button" onClick={() => this.toggleEdit(true)}>Редактировать</button>
+                    <Modal show={this.state.edit} cancel={() => this.toggleEdit(false)}>
                         <h2>Редактировать</h2>
                         <UserForm user={this.state.user} onUpdateSuccess={this.onUserUpdate}/>
-                    </div>
+                    </Modal>
                 </div>
             </Fragment> : null}
         </Fragment>;
     }
 }
 
-export default UserSettings;
+const mapStateToProps = state => ({
+    auth: state.auth
+});
+const mapDispatchToProps = dispatch => ({});
+
+export default connect(mapStateToProps, mapDispatchToProps)(UserSettings);
